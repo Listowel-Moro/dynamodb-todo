@@ -2,208 +2,389 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>ToDo List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* General Styling */
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f7f6;
+        :root {
+            --primary-color: #ff9800; /* Orange */
+            --primary-dark: #f57c00; /* Darker Orange */
+            --success-color: #4caf50;
+            --success-dark: #388e3c;
+            --danger-color: #f44336;
+            --danger-dark: #d32f2f;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
-            color: #333;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-primary);
+            min-height: 100vh;
         }
 
         h1 {
             text-align: center;
-            color: #2c3e50;
-            font-size: 2.5em;
-            margin-bottom: 30px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            color: var(--primary-color);
+            font-size: 2.2em;
+            padding: 15px 0;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        /* Layout Adjustments */
+        .container {
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 20px;
         }
 
         /* Form Styling */
         .todo-form {
-            background-color: #ffffff;
+            background-color: var(--card-bg);
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            margin: 0 auto 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 30%;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            transition: transform 0.3s ease;
         }
 
-        .todo-form label {
+        .todo-form:hover {
+            transform: translateY(-3px);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
             display: block;
             margin-bottom: 5px;
-            font-weight: bold;
-            color: #34495e;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.95em;
         }
 
-        .todo-form input[type="text"],
-        .todo-form textarea,
-        .todo-form input[type="checkbox"] {
+        .form-group input[type="text"],
+        .form-group textarea {
             width: 100%;
             padding: 10px;
-            margin-bottom: 15px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 1em;
+            border-radius: var(--border-radius);
+            font-size: 0.95em;
+            transition: border 0.3s;
         }
 
-        .todo-form textarea {
-            height: 100px;
+        .form-group input[type="text"]:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+        }
+
+        .form-group textarea {
+            min-height: 80px;
             resize: vertical;
         }
 
-        .todo-form input[type="checkbox"] {
-            width: auto;
-            margin-right: 10px;
+        .form-group .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .todo-form button {
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
+        .form-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
             cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s ease;
+            accent-color: var(--primary-color);
         }
 
-        .todo-form button:hover {
-            background-color: #2980b9;
+        button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            margin-top: 5px;
         }
 
-        /* List Styling */
+        button[type="submit"]:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Todo List Styling */
+        .todo-list-container {
+            flex-grow: 1;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding-right: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) transparent;
+        }
+
+        .todo-list-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .todo-list-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .todo-list-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 20px;
+        }
+
         .todo-list {
             list-style: none;
             padding: 0;
-            max-width: 700px;
-            margin: 0 auto;
         }
 
         .todo-item {
-            background-color: #ffffff;
-            padding: 15px;
+            background-color: var(--card-bg);
+            padding: 12px 15px;
             margin-bottom: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            transition: transform 0.2s ease;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 100px; /* Set minimum height for consistency */
         }
 
         .todo-item:hover {
             transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .todo-item.completed {
+            border-left: 3px solid var(--success-color);
+        }
+
+        .todo-item:not(.completed) {
+            border-left: 3px solid var(--primary-color);
         }
 
         .todo-details {
             flex-grow: 1;
-            margin-right: 15px;
+            margin-bottom: 8px;
         }
 
         .todo-title {
-            font-size: 1.2em;
-            margin: 0 0 5px 0;
-            color: #2c3e50;
+            font-size: 1.1em;
+            margin: 0 0 6px 0;
+            color: var(--text-primary);
+            font-weight: 600;
         }
 
         .completed .todo-title {
             text-decoration: line-through;
-            color: #7f8c8d;
+            color: var(--text-secondary);
         }
 
         .todo-description {
-            font-size: 1em;
+            font-size: 0.9em;
             color: #555;
-            margin: 5px 0;
+            margin: 6px 0;
+            line-height: 1.4;
+            /* Add ellipsis for long descriptions */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .todo-meta {
-            font-size: 0.9em;
+            font-size: 0.8em;
             color: #95a5a6;
-            margin: 5px 0;
+            margin: 3px 0;
+            display: inline-block;
+        }
+
+        .todo-status {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .status-pending {
+            background-color: rgba(255, 152, 0, 0.2);
+            color: var(--primary-dark);
+        }
+
+        .status-completed {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: var(--success-dark);
+        }
+
+        .todo-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-top: 3px;
         }
 
         .todo-actions form {
-            display: inline;
+            margin-right: 8px;
         }
 
-        .todo-actions button {
-            padding: 8px 15px;
+        .action-btn {
+            padding: 5px 10px;
             border: none;
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            font-size: 0.9em;
-            margin-left: 10px;
-            transition: background-color 0.3s ease;
+            font-size: 0.8em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
-        .todo-actions .complete-btn {
-            background-color: #2ecc71;
+        .action-btn i {
+            font-size: 0.9em;
+        }
+
+        .complete-btn {
+            background-color: var(--success-color);
             color: white;
         }
 
-        .todo-actions .complete-btn:disabled {
+        .complete-btn:disabled {
             background-color: #bdc3c7;
             cursor: not-allowed;
+            opacity: 0.7;
         }
 
-        .todo-actions .complete-btn:hover:not(:disabled) {
-            background-color: #27ae60;
+        .complete-btn:hover:not(:disabled) {
+            background-color: var(--success-dark);
         }
 
-        .todo-actions .delete-btn {
-            background-color: #e74c3c;
+        .delete-btn {
+            background-color: var(--danger-color);
             color: white;
         }
 
-        .todo-actions .delete-btn:hover {
-            background-color: #c0392b;
+        .delete-btn:hover {
+            background-color: var(--danger-dark);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                width: 95%;
+            }
+
+            .todo-form {
+                width: 100%;
+                position: static;
+                margin-bottom: 15px;
+            }
+
+            .todo-list-container {
+                width: 100%;
+                max-height: none;
+                padding-right: 0;
+            }
         }
     </style>
 </head>
 <body>
-<h1>ToDo List</h1>
+<h1>TODO List</h1>
 
-<!-- Add ToDo Form -->
-<div class="todo-form">
-    <form th:action="@{/add}" th:object="${newTodo}" method="post">
-        <label for="title">Task Title:</label>
-        <input type="text" id="title" th:field="*{title}" required placeholder="Enter task title">
+<div class="container">
+    <!-- Add ToDo Form -->
+    <div class="todo-form">
+        <form th:action="@{/add}" th:object="${newTodo}" method="post">
+            <div class="form-group">
+                <label for="title">Task Title:</label>
+                <input type="text" id="title" th:field="*{title}" required placeholder="What needs to be done?">
+            </div>
 
-        <label for="description">Description:</label>
-        <textarea id="description" th:field="*{description}" placeholder="Enter task description"></textarea>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" th:field="*{description}" placeholder="Add details about your task"></textarea>
+            </div>
 
-        <label for="completed">Completed:</label>
-        <input type="checkbox" id="completed" th:field="*{completed}">
+            <div class="form-group">
+                <div class="checkbox-container">
+                    <input type="checkbox" id="completed" th:field="*{completed}" class="completed-checkbox">
+                    <label for="completed">Mark as completed</label>
+                </div>
+            </div>
 
-        <button type="submit">Add Task</button>
-    </form>
+            <button type="submit">Add Task</button>
+        </form>
+    </div>
+
+    <!-- ToDo List -->
+    <div class="todo-list-container">
+        <ul class="todo-list">
+            <li th:each="todo : ${todos}" class="todo-item" th:classappend="${todo.completed} ? 'completed' : ''">
+                <div class="todo-details">
+                    <h3 class="todo-title" th:text="${todo.title}"></h3>
+                    <p class="todo-description" th:text="${todo.description} ?: 'No description provided.'"></p>
+                    <div>
+                            <span class="todo-meta">
+                                Status:
+                                <span
+                                        th:text="${todo.completed ? 'Completed' : 'Pending'}"
+                                        th:class="${todo.completed ? 'todo-status status-completed' : 'todo-status status-pending'}">
+                                </span>
+                            </span>
+                    </div>
+                </div>
+                <div class="todo-actions">
+                    <form th:action="@{/complete/{id}(id=${todo.id})}" method="post" th:if="${!todo.completed}">
+                        <button type="submit" class="action-btn complete-btn" th:disabled="${todo.completed}">
+                            <i class="fas fa-check"></i> Complete
+                        </button>
+                    </form>
+                    <form th:action="@{/delete/{id}(id=${todo.id})}" method="post">
+                        <button type="submit" class="action-btn delete-btn">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            </li>
+            <!-- Empty state message -->
+            <li th:if="${#lists.isEmpty(todos)}" class="todo-item" style="text-align: center; padding: 30px 20px;">
+                <p style="font-size: 1.1em; color: var(--text-secondary);">No tasks yet. Add a new task to get started!</p>
+            </li>
+        </ul>
+    </div>
 </div>
-
-<!-- ToDo List -->
-<ul class="todo-list">
-    <li th:each="todo : ${todos}" class="todo-item" th:classappend="${todo.completed} ? 'completed' : ''">
-        <div class="todo-details">
-            <p class="todo-title" th:text="${todo.title}"></p>
-            <p class="todo-description" th:text="${todo.description} ?: 'No description'"></p>
-            <p class="todo-meta">ID: <span th:text="${todo.id}"></span></p>
-<!--            <p class="todo-meta">Created: <span th:text="${todo.createdAt}"></span></p>-->
-<!--            <p class="todo-meta">Updated: <span th:text="${todo.updatedAt}"></span></p>-->
-            <p class="todo-meta">Status: <span th:text="${todo.completed ? 'Completed' : 'Pending'}"></span></p>
-        </div>
-        <div class="todo-actions">
-            <form th:action="@{/complete/{id}(id=${todo.id})}" method="post">
-                <button type="submit" class="complete-btn" th:disabled="${todo.completed}">Complete</button>
-            </form>
-            <form th:action="@{/delete/{id}(id=${todo.id})}" method="post">
-                <button type="submit" class="delete-btn">Delete</button>
-            </form>
-        </div>
-    </li>
-</ul>
 </body>
 </html>
